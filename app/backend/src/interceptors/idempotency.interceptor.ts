@@ -20,13 +20,15 @@ import { PrismaService } from '../prisma/prisma.service';
  * Usage: Add `@UseInterceptors(IdempotencyInterceptor)` to controllers
  */
 @Injectable()
-export class IdempotencyInterceptor implements NestInterceptor {
+export class IdempotencyInterceptor
+  implements NestInterceptor<unknown, unknown>
+{
   constructor(private prisma: PrismaService) {}
 
   async intercept(
     context: ExecutionContext,
-    next: CallHandler,
-  ): Promise<Observable<any>> {
+    next: CallHandler<unknown>,
+  ): Promise<Observable<unknown>> {
     const request = context.switchToHttp().getRequest<Request>();
     const response = context.switchToHttp().getResponse<Response>();
 

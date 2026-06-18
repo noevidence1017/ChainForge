@@ -161,7 +161,7 @@ export class FingerprintService {
    * Generate a combined fingerprint for multiple fields
    * Useful for composite deduplication
    */
-  generateCompositeFingerprint(fields: Record<string, any>): string {
+  generateCompositeFingerprint(fields: Record<string, unknown>): string {
     const sortedKeys = Object.keys(fields).sort();
     const combined = sortedKeys
       .map(key => `${key}:${JSON.stringify(fields[key])}`)

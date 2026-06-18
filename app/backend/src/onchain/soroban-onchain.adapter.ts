@@ -5,6 +5,7 @@ import { firstValueFrom } from 'rxjs';
 import {
   OnchainAdapter,
   ONCHAIN_ADAPTER_TOKEN,
+  AidPackage,
   InitEscrowParams,
   InitEscrowResult,
   CreateAidPackageParams,
@@ -194,14 +195,14 @@ export class SorobanOnchainAdapter implements OnchainAdapter {
       contractId: this.contractId,
       key: params.packageId,
     });
-    const pkg = result as any;
+    const pkg = result as Record<string, unknown> | null;
     return {
       package: {
         id: params.packageId,
-        recipient: pkg?.recipient ?? '',
+        recipient: String(pkg?.recipient ?? ''),
         amount: String(pkg?.amount ?? '0'),
-        token: pkg?.token ?? '',
-        status: pkg?.status ?? 'Created',
+        token: String(pkg?.token ?? ''),
+        status: (pkg?.status as AidPackage['status']) ?? 'Created',
         createdAt: Number(pkg?.created_at ?? 0),
         expiresAt: Number(pkg?.expires_at ?? 0),
       },
@@ -216,7 +217,7 @@ export class SorobanOnchainAdapter implements OnchainAdapter {
       contractId: this.contractId,
       key: 'aggregates_' + params.token,
     });
-    const agg = result as any;
+    const agg = result as Record<string, unknown> | null;
     return {
       aggregates: {
         totalCommitted: String(agg?.total_committed ?? '0'),
@@ -237,7 +238,7 @@ export class SorobanOnchainAdapter implements OnchainAdapter {
     return {
       tokenAddress: params.tokenAddress,
       accountAddress: params.accountAddress,
-      balance: String((result as any) ?? '0'),
+      balance: String(result ?? '0'),
       timestamp: new Date(),
     };
   }
@@ -247,9 +248,10 @@ export class SorobanOnchainAdapter implements OnchainAdapter {
       contractId: this.contractId,
       key: 'metadata',
     });
+    const data = result as Record<string, unknown> | null;
     return {
-      version: (result as any)?.version ?? '1.0.0',
-      name: (result as any)?.name ?? 'Soroban Contract',
+      version: String(data?.version ?? '1.0.0'),
+      name: String(data?.name ?? 'Soroban Contract'),
       timestamp: new Date(),
     };
   }
@@ -260,7 +262,7 @@ export class SorobanOnchainAdapter implements OnchainAdapter {
       key: 'paused',
     });
     return {
-      isPaused: (result as any) ?? false,
+      isPaused: Boolean(result),
       timestamp: new Date(),
     };
   }
@@ -270,9 +272,10 @@ export class SorobanOnchainAdapter implements OnchainAdapter {
       contractId: this.contractId,
       key: 'fee_config',
     });
+    const data = result as Record<string, unknown> | null;
     return {
-      feePercentage: (result as any)?.fee_percentage ?? '0',
-      maxFee: (result as any)?.max_fee ?? '0',
+      feePercentage: String(data?.fee_percentage ?? '0'),
+      maxFee: String(data?.max_fee ?? '0'),
       timestamp: new Date(),
     };
   }
@@ -282,11 +285,12 @@ export class SorobanOnchainAdapter implements OnchainAdapter {
       contractId: this.contractId,
       key: 'summary_' + packageId,
     });
+    const data = result as Record<string, unknown> | null;
     return {
       packageId,
-      totalAmount: (result as any)?.total_amount ?? '0',
-      claimedAmount: (result as any)?.claimed_amount ?? '0',
-      status: (result as any)?.status ?? 'Active',
+      totalAmount: String(data?.total_amount ?? '0'),
+      claimedAmount: String(data?.claimed_amount ?? '0'),
+      status: String(data?.status ?? 'Active'),
       timestamp: new Date(),
     };
   }
@@ -329,7 +333,7 @@ export class SorobanOnchainAdapter implements OnchainAdapter {
       const result = await rpcCall(this.http, this.rpcUrl, 'getTransaction', {
         hash,
       });
-      const r = result as any;
+      const r = result as Record<string, unknown> | null;
       let status: TxStatus;
       switch (r?.status) {
         case 'SUCCESS':
@@ -351,7 +355,7 @@ export class SorobanOnchainAdapter implements OnchainAdapter {
         ledger: typeof r?.ledger === 'number' ? r.ledger : undefined,
         errorMessage:
           status === 'failed'
-            ? (r?.resultXdr ?? 'Transaction failed')
+            ? String(r?.resultXdr ?? 'Transaction failed')
             : undefined,
       };
     } catch {

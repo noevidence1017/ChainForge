@@ -5,7 +5,7 @@ import { Bell, X, ExternalLink, RefreshCw, CheckCircle, XCircle, Clock, AlertCir
 import { useTranslations } from 'next-intl';
 import { useFormatter } from '@/hooks/useFormatter';
 import { useActivityStore } from '@/lib/activityStore';
-import type { ActivityStatus } from '@/types/activity';
+import type { ActivityItem, ActivityStatus } from '@/types/activity';
 
 const statusIcons: Record<ActivityStatus, React.ComponentType<{ size?: number; className?: string }>> = {
   pending: Clock,
@@ -29,7 +29,7 @@ export function ActivityCenter() {
 
   const pendingCount = activities.filter(a => a.status === 'pending' || a.status === 'processing').length;
 
-  const handleRetry = async (activity: any) => {
+  const handleRetry = async (activity: ActivityItem) => {
     if (activity.retryAction) {
       // Reset activity to pending state
       updateActivity(activity.id, {

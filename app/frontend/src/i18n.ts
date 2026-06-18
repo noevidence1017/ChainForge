@@ -16,7 +16,7 @@ const messages = {
 export default getRequestConfig(async ({ requestLocale }) => {
   const locale = await requestLocale;
 
-  if (!locale || !locales.includes(locale as any)) notFound();
+  if (!locale || !(locales as readonly string[]).includes(locale)) notFound();
 
   return {
     locale,

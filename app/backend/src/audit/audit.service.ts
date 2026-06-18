@@ -11,7 +11,7 @@ export interface AuditLogParams {
   entity: string;
   entityId: string;
   action: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface AuditQuery {

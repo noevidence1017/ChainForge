@@ -13,10 +13,25 @@ import { LoggerService } from '../../logger/logger.service';
 export interface ErrorResponse {
   code: number;
   message: string;
-  details?: any;
+  details?: unknown;
   traceId?: string;
   timestamp: string;
   path: string;
+}
+
+/** Minimal shape for an arbitrary thrown value (Error-like or not). */
+interface ExceptionLike {
+  constructor?: { name?: string };
+  status?: number;
+  message?: string;
+  stack?: string;
+}
+
+/** Shape of a Prisma client error, duck-typed since we don't depend on @prisma/client error classes here. */
+interface PrismaErrorLike extends ExceptionLike {
+  code?: string;
+  clientVersion?: string;
+  meta?: Record<string, unknown>;
 }
 
 @Injectable()
@@ -24,18 +39,19 @@ export interface ErrorResponse {
 export class AllExceptionsFilter implements ExceptionFilter {
   constructor(private readonly logger: LoggerService) {}
 
-  catch(exception: any, host: ArgumentsHost): void {
+  catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
     const traceId = request.headers['x-request-id'] as string | undefined;
+    const err = exception as ExceptionLike;
 
     // Log the error
     this.logger.error(
-      `Trace ID: ${traceId ?? 'N/A'} | ${exception.constructor?.name ?? 'UnknownError'} | Status: ${
-        exception.status || HttpStatus.INTERNAL_SERVER_ERROR
-      } | Message: ${exception.message} | Path: ${request.url}`,
-      exception.stack,
+      `Trace ID: ${traceId ?? 'N/A'} | ${err.constructor?.name ?? 'UnknownError'} | Status: ${
+        err.status || HttpStatus.INTERNAL_SERVER_ERROR
+      } | Message: ${err.message} | Path: ${request.url}`,
+      err.stack,
       'AllExceptionsFilter',
     );
 
@@ -44,7 +60,11 @@ export class AllExceptionsFilter implements ExceptionFilter {
     if (exception instanceof HttpException) {
       errorResponse = this.handleHttpException(exception, request, traceId);
     } else if (this.isPrismaError(exception)) {
-      errorResponse = this.handlePrismaError(exception, request, traceId);
+      errorResponse = this.handlePrismaError(
+        exception as PrismaErrorLike,
+        request,
+        traceId,
+      );
     } else if (
       Array.isArray(exception) &&
       exception.some(e => e instanceof ValidationError)
@@ -67,7 +87,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const message =
       typeof exceptionResponse === 'string'
         ? exceptionResponse
-        : (exceptionResponse as any).message || exception.message;
+        : (exceptionResponse as { message?: unknown }).message ||
+          exception.message;
 
     return {
       code: status,
@@ -80,33 +101,33 @@ export class AllExceptionsFilter implements ExceptionFilter {
     };
   }
 
-  private isPrismaError(exception: any): boolean {
-    return (
-      exception?.constructor?.name?.includes('Prisma') ||
-      exception?.clientVersion ||
-      exception?.meta?.target
+  private isPrismaError(exception: unknown): boolean {
+    const err = exception as PrismaErrorLike;
+    return Boolean(
+      err?.constructor?.name?.includes('Prisma') ||
+        err?.clientVersion ||
+        err?.meta?.target,
     );
   }
 
   private handlePrismaError(
-    exception: any,
+    exception: PrismaErrorLike,
     request: Request,
     traceId?: string,
   ): ErrorResponse {
     let code = HttpStatus.INTERNAL_SERVER_ERROR;
     let message = 'Database error occurred';
-    let details: any = null;
+    let details: Record<string, unknown> | null = null;
 
     // Map common Prisma errors
     if (exception.code === 'P2002') {
       // Unique constraint failed
       code = HttpStatus.CONFLICT;
       message = 'Unique constraint violation';
+      const target = exception.meta?.target;
       details = {
-        target: exception.meta?.target,
-        field: Array.isArray(exception.meta?.target)
-          ? exception.meta.target.join(', ')
-          : exception.meta?.target,
+        target,
+        field: Array.isArray(target) ? target.join(', ') : target,
       };
     } else if (exception.code === 'P2025') {
       // Record not found
@@ -172,7 +193,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     };
   }
 
-  private formatChildren(children: ValidationError[]): any[] {
+  private formatChildren(children: ValidationError[]): Record<string, unknown>[] {
     return children.map(child => ({
       property: child.property,
       value: child.value,
@@ -184,18 +205,19 @@ export class AllExceptionsFilter implements ExceptionFilter {
   }
 
   private handleGenericError(
-    exception: any,
+    exception: unknown,
     request: Request,
     traceId?: string,
   ): ErrorResponse {
+    const err = exception as ExceptionLike;
     return {
       code: HttpStatus.INTERNAL_SERVER_ERROR,
-      message: exception.message || 'Internal server error',
+      message: err.message || 'Internal server error',
       details: {
-        error_type: exception.constructor?.name,
+        error_type: err.constructor?.name,
         ...(typeof process !== 'undefined' &&
           process.env.NODE_ENV === 'development' && {
-            stack: exception.stack,
+            stack: err.stack,
           }),
       },
       traceId,

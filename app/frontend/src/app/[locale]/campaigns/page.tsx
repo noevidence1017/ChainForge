@@ -301,7 +301,7 @@ export default function CampaignsPage() {
                       {campaignAction.isPending && campaignAction.variables?.id === campaign.id ? (
                         <InlineFeedback
                           isPending={true}
-                          action={campaignAction.variables?.action.type === 'pause' ? 'pausing' : campaignAction.variables?.action.type === 'resume' ? 'resuming' : 'archiving' as any}
+                          action={campaignAction.variables?.action.type === 'pause' ? 'pausing' : campaignAction.variables?.action.type === 'resume' ? 'resuming' : 'archiving'}
                         />
                       ) : (
                         <>

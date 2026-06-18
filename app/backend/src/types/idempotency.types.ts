@@ -1,5 +1,5 @@
 export interface IdempotencyRecord {
-  body: any;
+  body: unknown;
   statusCode: number;
   headers: Record<string, string | number | string[]>;
   fingerprint: string;

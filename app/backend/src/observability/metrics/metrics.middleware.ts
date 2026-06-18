@@ -20,7 +20,7 @@ export class MetricsMiddleware implements NestMiddleware {
     const self = this;
 
     // Override the end function to capture metrics
-    res.end = function (...args: any[]): any {
+    res.end = function (...args: unknown[]) {
       // Calculate duration
       const duration = (Date.now() - start) / 1000; // Convert to seconds
 

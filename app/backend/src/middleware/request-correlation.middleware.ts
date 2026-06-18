@@ -56,7 +56,7 @@ export class RequestCorrelationMiddleware implements NestMiddleware {
 
     // Store correlation ID in async local storage for the logger
     const asyncLocalStorage = this.logger.getAsyncLocalStorage();
-    const store = new Map<string, any>();
+    const store = new Map<string, unknown>();
     store.set(CORRELATION_ID_KEY, correlationId);
 
     // Log request start (optional - can be removed if too verbose)

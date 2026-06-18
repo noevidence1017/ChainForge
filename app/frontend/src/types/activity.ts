@@ -15,7 +15,7 @@ export interface ActivityItem {
   description: string;
   timestamp: Date;
   currentStep?: string;
-  retryAction?: () => Promise<any>;
+  retryAction?: () => Promise<unknown>;
   explorerUrl?: string;
   transactionHash?: string;
   errorMessage?: string;

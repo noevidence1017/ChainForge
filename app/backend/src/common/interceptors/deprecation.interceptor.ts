@@ -16,8 +16,13 @@ import { DEPRECATION_POLICY } from '../constants/api-version.constants';
  * If found, it adds the appropriate RFC-standardized deprecation headers to the response.
  */
 @Injectable()
-export class DeprecationInterceptor implements NestInterceptor {
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+export class DeprecationInterceptor
+  implements NestInterceptor<unknown, unknown>
+{
+  intercept(
+    context: ExecutionContext,
+    next: CallHandler<unknown>,
+  ): Observable<unknown> {
     const handler = context.getHandler();
     const controller = context.getClass();
 

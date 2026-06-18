@@ -14,10 +14,13 @@ interface ExtendedRequest extends Request {
 }
 
 @Injectable()
-export class LoggingInterceptor implements NestInterceptor {
+export class LoggingInterceptor implements NestInterceptor<unknown, unknown> {
   constructor(private readonly logger: LoggerService) {}
 
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  intercept(
+    context: ExecutionContext,
+    next: CallHandler<unknown>,
+  ): Observable<unknown> {
     const request = context.switchToHttp().getRequest<ExtendedRequest>();
     const response = context
       .switchToHttp()
@@ -27,9 +30,7 @@ export class LoggingInterceptor implements NestInterceptor {
     const url = request.url;
     const requestId = request.headers['x-request-id'] as string;
     const userId =
-      (request.user as any)?.sub ||
-      (request.user as any)?.id ||
-      (request.user as any)?.apiKeyId;
+      request.user?.sub || request.user?.id || request.user?.apiKeyId;
     const route = `${method} ${url}`;
     const startTime = Date.now();
 

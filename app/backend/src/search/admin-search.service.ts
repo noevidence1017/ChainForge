@@ -1,12 +1,23 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
+export interface AdminSearchResult {
+  type: 'campaign' | 'claim' | 'recipient' | 'verification';
+  label: string;
+  status: string;
+  id: string;
+}
+
 @Injectable()
 export class AdminSearchService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async search(query: string, entity: string | undefined, orgId: string) {
-    const results: any[] = [];
+  async search(
+    query: string,
+    entity: string | undefined,
+    orgId: string,
+  ): Promise<AdminSearchResult[]> {
+    const results: AdminSearchResult[] = [];
     const q = query.toLowerCase();
 
     // 1. Search Campaigns

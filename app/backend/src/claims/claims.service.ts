@@ -312,9 +312,9 @@ export class ClaimsService {
    */
   private getTokenAddressForClaim(
     claim: {
-      metadata?: any;
-      campaign?: { metadata?: any } | null;
-    } & Record<string, any>,
+      metadata?: unknown;
+      campaign?: { metadata?: unknown } | null;
+    } & Record<string, unknown>,
   ): string {
     // Default USDC on Stellar testnet
     // In production, this should come from the claim record or campaign config

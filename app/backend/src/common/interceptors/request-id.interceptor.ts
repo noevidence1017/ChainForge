@@ -8,8 +8,11 @@ import { Observable } from 'rxjs';
 import { Request, Response } from 'express';
 
 @Injectable()
-export class RequestIdInterceptor implements NestInterceptor {
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+export class RequestIdInterceptor implements NestInterceptor<unknown, unknown> {
+  intercept(
+    context: ExecutionContext,
+    next: CallHandler<unknown>,
+  ): Observable<unknown> {
     const ctx = context.switchToHttp();
     const request = ctx.getRequest<Request>();
     const response = ctx.getResponse<Response>();

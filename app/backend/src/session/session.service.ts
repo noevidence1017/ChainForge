@@ -12,6 +12,7 @@ import {
   Session,
   SessionStep,
   SessionSubmission,
+  Prisma,
 } from '@prisma/client';
 import { CreateSessionDto } from './dto/create-session.dto';
 import { SubmitStepDto } from './dto/submit-step.dto';
@@ -157,10 +158,8 @@ export class SessionService {
         sessionId,
         stepId,
         submissionKey: dto.submissionKey,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        payload: dto.payload as any,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        response: result as any,
+        payload: dto.payload as Prisma.InputJsonValue,
+        response: result as Prisma.InputJsonValue,
       },
     });
 
@@ -224,8 +223,7 @@ export class SessionService {
         where: { id: stepId },
         data: {
           status: SessionStepStatus.completed,
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          output: result as any,
+          output: result as Prisma.InputJsonValue,
           completedAt: new Date(),
         },
       });

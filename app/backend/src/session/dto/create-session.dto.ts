@@ -28,7 +28,7 @@ export class SessionStepDefinitionDto {
   @ApiPropertyOptional({ description: 'Initial input data for the step' })
   @IsOptional()
   @IsObject()
-  input?: Record<string, any>;
+  input?: Record<string, unknown>;
 }
 
 export class CreateSessionDto {
@@ -49,7 +49,7 @@ export class CreateSessionDto {
   @ApiPropertyOptional({ description: 'Additional metadata for the session' })
   @IsOptional()
   @IsObject()
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 
   @ApiPropertyOptional({ description: 'Session expiration time' })
   @IsOptional()

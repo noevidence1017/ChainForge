@@ -24,7 +24,7 @@ export function idempotencyMiddleware(store: IdempotencyStore) {
         // First time: Intercept the response to cache it
         const originalSend = res.send.bind(res);
 
-        res.send = (body: any) => {
+        res.send = (body: unknown) => {
           const status = res.statusCode;
           const recordStatus =
             status >= 200 && status < 300 ? 'succeeded' : 'failed';

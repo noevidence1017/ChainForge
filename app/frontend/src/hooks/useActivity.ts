@@ -12,7 +12,7 @@ export function useActivity() {
     action: () => Promise<{ transactionHash?: string; explorerUrl?: string }>,
     options?: {
       retryAction?: () => Promise<{ transactionHash?: string; explorerUrl?: string }>;
-      onSuccess?: (result: any) => void;
+      onSuccess?: (result: { transactionHash?: string; explorerUrl?: string }) => void;
       onError?: (error: Error) => void;
     }
   ) => {
@@ -48,13 +48,13 @@ export function useActivity() {
     }
   };
 
-  const trackJob = async (
+  const trackJob = async <T = unknown>(
     title: string,
     description: string,
-    action: () => Promise<any>,
+    action: () => Promise<T>,
     options?: {
-      retryAction?: () => Promise<any>;
-      onSuccess?: (result: any) => void;
+      retryAction?: () => Promise<T>;
+      onSuccess?: (result: T) => void;
       onError?: (error: Error) => void;
     }
   ) => {

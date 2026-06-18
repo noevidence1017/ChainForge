@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
 import { Processor, WorkerHost, OnWorkerEvent } from '@nestjs/bullmq';
 import { Logger, Inject } from '@nestjs/common';
 import { Job } from 'bullmq';
@@ -7,7 +6,13 @@ import {
   OnchainJobResult,
   OnchainOperationType,
 } from './interfaces/onchain-job.interface';
-import { ONCHAIN_ADAPTER_TOKEN, OnchainAdapter } from './onchain.adapter';
+import {
+  ONCHAIN_ADAPTER_TOKEN,
+  OnchainAdapter,
+  InitEscrowResult,
+  CreateClaimResult,
+  DisburseResult,
+} from './onchain.adapter';
 
 import { DlqService } from '../jobs/dlq.service';
 import { MetricsService } from '../observability/metrics/metrics.service';
@@ -41,7 +46,7 @@ export class OnchainProcessor extends WorkerHost {
     );
 
     try {
-      let result: any;
+      let result: InitEscrowResult | CreateClaimResult | DisburseResult;
       switch (job.data.type) {
         case OnchainOperationType.INIT_ESCROW:
           result = await this.onchainAdapter.initEscrow(job.data.params);
@@ -58,7 +63,7 @@ export class OnchainProcessor extends WorkerHost {
           );
       }
 
-      if (result && 'status' in result && result.status === 'failed') {
+      if (result.status === 'failed') {
         throw new Error(`Onchain operation failed: ${String(job.data.type)}`);
       }
 
@@ -70,8 +75,8 @@ export class OnchainProcessor extends WorkerHost {
 
       return {
         success: true,
-        transactionHash: result?.transactionHash,
-        metadata: result?.metadata,
+        transactionHash: result.transactionHash,
+        metadata: result.metadata,
       };
     } catch (error) {
       const errMessage =
